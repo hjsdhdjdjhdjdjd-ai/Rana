@@ -1,8 +1,0 @@
-pages:
-  stage: deploy
-  script:
-    - mkdir -p public
-    - cp -r index.html login2.html register-teacher.html dashboard.html guardian.html style.css script.js login2.js register-teacher.js dashboard.js guardian.js db.js supabase-config.js sw.js manifest.webmanifest icons public/
-  artifacts:
-    paths:
-      - public
