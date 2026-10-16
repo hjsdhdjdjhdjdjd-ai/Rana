@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#050505">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Mrs.Rana | تسجيل معلم جديد</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+<!-- خلفية متحركة -->
+<div class="background"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="glow"></div>
+
+<!-- شاشة البداية -->
+<div class="intro">
+    <h1>Mrs.Rana</h1>
+</div>
+
+<!-- صندوق تسجيل معلم جديد -->
+<main class="login-box">
+    <div class="brand-icon">📝</div>
+    <h2>تسجيل معلم جديد</h2>
+    <p class="subtitle">أنشئ حسابك الخاص للدخول للوحة المعلم</p>
+
+    <form id="regForm" novalidate>
+        <div class="input-box">
+            <input type="text" id="regName" placeholder=" " autocomplete="off">
+            <label for="regName">اسم المعلم</label>
+        </div>
+
+        <div class="input-box code">
+            <input type="text" id="regUser" placeholder=" " autocomplete="off" spellcheck="false">
+            <label for="regUser">اسم المستخدم (انجليزي بدون مسافات)</label>
+        </div>
+
+        <div class="input-box secret has-eye">
+            <input type="password" id="regSecret" placeholder=" " inputmode="numeric" autocomplete="off">
+            <label for="regSecret">الرقم السري (ارقام فقط)</label>
+            <button type="button" class="eye-btn" id="regToggle" aria-label="إظهار الرقم السري">👁</button>
+        </div>
+
+        <p class="form-error" id="regError" role="alert" aria-live="polite"></p>
+
+        <button type="submit" class="login-btn" id="regBtn">تسجيل</button>
+    </form>
+
+    <a class="alt-link" href="login2.html">عندك حساب؟ دخول المعلمين ←</a>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="db.js"></script>
+<script src="register-teacher.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+
+</body>
+</html>
