@@ -554,14 +554,38 @@ function renderMyEval() {
 }
 function renderMyMessages() {
     const ul = $("myMessages"); if (!ul) return;
-    const items = readList(MSG_S_KEY).filter(function (m) { return m && m.code === session.code; });
-    if (!items.length) { ul.innerHTML = '<li class="empty">لا توجد رسائل.</li>'; return; }
+    /* أسئلة الطالب المرسلة للمعلمة (من MSG_T_KEY) + ردود المعلمة للطالب (من MSG_S_KEY) */
+    const mine = readList(MSG_T_KEY).filter(function (m) { return m && m.code === session.code; });
+    const replies = readList(MSG_S_KEY).filter(function (m) { return m && m.code === session.code; });
+    const all = [];
+    mine.forEach(function (m) { all.push({ kind: "q", at: m.at, text: m.text, image: m.image }); });
+    replies.forEach(function (m) { all.push({ kind: "a", at: m.at, text: m.text, image: m.image }); });
+    all.sort(function (a, b) { return a.at - b.at; });
+    if (!all.length) { ul.innerHTML = '<li class="empty">لا توجد رسائل.</li>'; return; }
     ul.innerHTML = "";
-    items.forEach(function (m) {
+    all.forEach(function (m) {
         const li = document.createElement("li"); li.className = "msg-item";
-        li.innerHTML = "<p>" + esc(m.text || "") + "</p>" +
-            (m.image ? '<img class="msg-img" src="' + esc(m.image) + '" alt="">' : "") +
-            "<small>" + fmtTime(m.at) + "</small>";
+        const bubble = document.createElement("div");
+        bubble.className = "msg-bubble " + (m.kind === "q" ? "q" : "a");
+        const who = document.createElement("div");
+        who.className = "who";
+        who.textContent = m.kind === "q" ? "سؤالك" : "رد المعلمة";
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+        textDiv.textContent = esc(m.text || "");
+        if (m.image) {
+            const img = document.createElement("img");
+            img.className = "msg-img";
+            img.src = esc(m.image);
+            img.alt = "";
+            textDiv.appendChild(img);
+        }
+        const time = document.createElement("small");
+        time.textContent = fmtTime(m.at);
+        bubble.appendChild(who);
+        bubble.appendChild(textDiv);
+        bubble.appendChild(time);
+        li.appendChild(bubble);
         ul.appendChild(li);
     });
 }
