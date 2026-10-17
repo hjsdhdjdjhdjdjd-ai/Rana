@@ -86,6 +86,12 @@
             if (!this.ready) return Promise.resolve(null);
             return this.sb.from(table).select("*").then(r => r.data || []).catch(() => null);
         },
+        // تحديث حالة قراءة رسالة باستخدام code و at (بدون الحاجة لـ id)
+        markRead(code, at) {
+            if (!this.ready) return;
+            this.sb.from("messages").update({ is_read: true }).match({ code: code, at: at })
+                .then(() => {}, () => {});
+        },
         init() {
             try {
                 if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) return;

@@ -505,9 +505,9 @@ function renderTeacherMsgs() {
     all.forEach(function (m) { if (m && !m.read) { m.read = true; ch = true; } });
     if (ch) saveList(MSG_T_KEY, all);
     all.forEach(function (m) { if (m && m.id && m.read) pushRow("messages", { id: m.id, is_read: true }); });
-    /* إرسال حالة القراءة إلى Supabase عشان الطالب يشوف "تم القراءة" من أي جهاز */
+    /* إرسال حالة القراءة إلى Supabase باستخدام code+at (بدون الحاجة لـ id) */
     if (window.DB && DB.ready) {
-        all.forEach(function (m) { if (m && m.id && m.read) DB.push("messages", { id: m.id, is_read: true }); });
+        all.forEach(function (m) { if (m && m.code && m.at && m.read) DB.markRead(m.code, m.at); });
     }
     updateMsgBadge();
     ul.querySelectorAll(".msg-item").forEach(function (li) { li.classList.remove("unread"); li.querySelector(".status").textContent = "مقروءة"; li.querySelector(".status").classList.remove("new"); });
