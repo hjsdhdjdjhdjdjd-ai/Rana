@@ -89,8 +89,9 @@
         // تحديث حالة قراءة رسالة باستخدام code و at (بدون الحاجة لـ id)
         markRead(code, at) {
             if (!this.ready) return;
-            this.sb.from("messages").update({ is_read: true }).match({ code: code, at: at })
-                .then(() => {}, () => {});
+            let q = this.sb.from("messages").update({ is_read: true }).eq("code", code);
+            if (at) q = q.eq("at", at);
+            q.then(() => {}, () => {});
         },
         init() {
             try {

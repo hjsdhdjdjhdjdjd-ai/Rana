@@ -502,9 +502,18 @@ function renderTeacherMsgs() {
     });
     const all = readList(MSG_T_KEY);
     let ch = false;
-    all.forEach(function (m) { if (m && !m.read) { m.read = true; ch = true; } });
-    if (ch) saveList(MSG_T_KEY, all);
-    all.forEach(function (m) { if (m && m.id && m.read) pushRow("messages", { id: m.id, is_read: true }); });
+    // تحديد الكل كمقروء محلياً وسحابياً فور فتح اللوحة
+    const changed = [];
+    all.forEach(function (m) {
+        if (m && !m.read) {
+            m.read = true;
+            changed.push(m);
+            if (m.code && m.at && window.DB) DB.markRead(m.code, m.at);
+        }
+    });
+    if (changed.length) {
+        writeList(MSG_T_KEY, all);
+    }
     /* إرسال حالة القراءة إلى Supabase باستخدام code+at (بدون الحاجة لـ id) */
     if (window.DB && DB.ready) {
         all.forEach(function (m) { if (m && m.code && m.at && m.read) DB.markRead(m.code, m.at); });
@@ -539,6 +548,19 @@ function initStudentArea() {
     initToTeacherForm(); renderMyToTeacher();
     setupPhotoControl("attachMyPhoto", "imgMyPhoto", "prevMyPhoto", function () { return session ? session.code : null; });
     showPhotoState("prevMyPhoto", "attachMyPhoto", session.code);
+
+    /* تحديث دوري ذكي كل 5 ثوانٍ لسحب أي تحديثات (قراءة الرسائل أو الردود الجديدة) */
+    if (!window._studentSyncTimer) {
+        window._studentSyncTimer = setInterval(function () {
+            if (!session || session.role !== "student") return;
+            if (window.DB && DB.ready) {
+                DB.pullAll().then(function () {
+                    renderMyToTeacher();
+                    renderMyMessages();
+                });
+            }
+        }, 5000);
+    }
 }
 function renderWelcome() {
     const banner = $("welcomeBanner"); if (!banner || !session) return;
@@ -662,14 +684,53 @@ function initToTeacherForm() {
 function renderMyToTeacher() {
     const ul = $("myToTeacher"); if (!ul) return;
     const items = readList(MSG_T_KEY).filter(function (m) { return m && m.code === session.code; });
+    const replies = readList(MSG_S_KEY).filter(function (m) { return m && m.code === session.code; });
+
     if (!items.length) { ul.innerHTML = '<li class="empty">لم ترسل رسائل بعد.</li>'; return; }
     ul.innerHTML = "";
+
     items.forEach(function (m) {
         const li = document.createElement("li"); li.className = "msg-item";
-        li.innerHTML = "<p>" + esc(m.text || "") + "</p>" +
-            (m.image ? '<img class="msg-img" src="' + esc(m.image) + '" alt="">' : "") +
-            '<span class="status">' + (m.read ? "تمت القراءة" : "وصلت (لم تقرأ بعد)") + "</span>" +
-            "<small>" + fmtTime(m.at) + "</small>";
+        const convo = document.createElement("div"); convo.className = "msg-convo";
+        const body = document.createElement("div"); body.className = "msg-body";
+
+        // 1. فقاعة رسالة الطالب (السؤال)
+        const qBubble = document.createElement("div");
+        qBubble.className = "msg-bubble q";
+        qBubble.innerHTML =
+            '<div class="who">رسالتك</div>' +
+            '<div class="text">' + esc(m.text || "") +
+            (m.image ? '<br><img class="msg-img" src="' + esc(m.image) + '" alt="">' : "") +
+            '</div>' +
+            '<div class="status-row" style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">' +
+                '<small style="margin:0;">' + fmtTime(m.at) + '</small>' +
+                '<span class="status ' + (m.read ? "" : "new") + '">' + (m.read ? "✓ مقروءة" : "غير مقروءة") + '</span>' +
+            '</div>';
+        body.appendChild(qBubble);
+
+        // 2. البحث عن رد معلمة متعلق بهذه الرسالة (أي رد للمعلمة أتى بعد وقت هذه الرسالة وقبل وقت الرسالة التالية)
+        // أحدث رد أتى بعد زمن الرسالة at
+        const matchReply = replies
+            .filter(function (r) { return r.at >= m.at; })
+            .sort(function (a, b) { return a.at - b.at; })[0];
+
+        if (matchReply) {
+            const div = document.createElement("div"); div.className = "divider";
+            body.appendChild(div);
+
+            const aBubble = document.createElement("div");
+            aBubble.className = "msg-bubble a";
+            aBubble.innerHTML =
+                '<div class="who">رد المعلمة</div>' +
+                '<div class="text">' + esc(matchReply.text || "") +
+                (matchReply.image ? '<br><img class="msg-img" src="' + esc(matchReply.image) + '" alt="">' : "") +
+                '</div>' +
+                '<small>' + fmtTime(matchReply.at) + '</small>';
+            body.appendChild(aBubble);
+        }
+
+        convo.appendChild(body);
+        li.appendChild(convo);
         ul.appendChild(li);
     });
 }
