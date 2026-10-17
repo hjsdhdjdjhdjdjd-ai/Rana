@@ -10,7 +10,14 @@ const MSG_T_KEY = "rana_messages_to_teacher";
 const WELCOME_KEY = "rana_welcome";
 const PHOTOS_KEY = "rana_student_photos";
 const CASCADE_KEYS = [TASKS_KEY, EVALS_KEY, MSG_S_KEY, MSG_G_KEY, GUARDIANS_KEY, MSG_T_KEY, WELCOME_KEY];
-function $(id) { return document.getElementById(id); }
+const attachState = {};
+function logout() {
+    // Remove session from storage
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    // Redirect to login page
+    location.href = "login2.html";
+}
 function getSession() { try { const r = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
 function readList(k) { try { const v = JSON.parse(localStorage.getItem(k) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function saveList(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
@@ -281,7 +288,6 @@ function initEvalForm() {
     form.addEventListener("input", function () { okFn(form, box); });
 }
 /*__PART4__*//* attach helper + messages */
-const attachState = {};
 function setupAttach(btnId, inputId, prevId, key) {
     const btn = $(btnId), input = $(inputId), prev = $(prevId);
     if (!btn || !input || !prev) return;

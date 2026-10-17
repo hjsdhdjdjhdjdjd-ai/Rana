@@ -1,11 +1,16 @@
 /* تسجيل معلم جديد في جدول المعلمين السحابي */
 const form = document.getElementById("regForm");
-const nameInput = document.getElementById("regName");
-const userInput = document.getElementById("regUser");
-const secretInput = document.getElementById("regSecret");
-const errorBox = document.getElementById("regError");
-const regBtn = document.getElementById("regBtn");
-const toggleBtn = document.getElementById("regToggle");
+// Helper to get element safely
+function getElement(id) {
+  const el = document.getElementById(id);
+  return el;
+}
+const nameInput = getElement("regName");
+const userInput = getElement("regUser");
+const secretInput = getElement("regSecret");
+const errorBox = getElement("regError");
+const regBtn = getElement("regBtn");
+const toggleBtn = getElement("regToggle");
 let busy = false;
 function showError(msg, shake) {
     errorBox.textContent = msg;
