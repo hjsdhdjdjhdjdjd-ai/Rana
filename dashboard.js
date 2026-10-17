@@ -67,12 +67,15 @@ else {
         applyAvatar();
     }
     $("loginTime").textContent = session.at ? fmtTime(session.at) : "—";
-    if (isTeacher) { $("teacherArea").hidden = false; initTeacherPanel(); }
-    else { $("studentArea").hidden = false; initStudentArea(); }
+    /* زرار الخروج يُضاف قبل أي عملية تهيئة لضمان عمله حتى لو حدث خطأ في اللوحات */
     $("logoutBtn").addEventListener("click", function () {
         localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
         location.href = session.page || (isTeacher ? "login2.html" : "index.html");
     });
+    try {
+        if (isTeacher) { $("teacherArea").hidden = false; initTeacherPanel(); }
+        else { $("studentArea").hidden = false; initStudentArea(); }
+    } catch (e) { console.error("لوحةinit خطأ:", e); }
 }
 function applyAvatar() {
     const av = $("avatar"); if (!av || !session || session.username) return;
