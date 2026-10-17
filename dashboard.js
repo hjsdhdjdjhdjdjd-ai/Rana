@@ -12,13 +12,6 @@ const PHOTOS_KEY = "rana_student_photos";
 const CASCADE_KEYS = [TASKS_KEY, EVALS_KEY, MSG_S_KEY, MSG_G_KEY, GUARDIANS_KEY, MSG_T_KEY, WELCOME_KEY];
 const attachState = {};
 function $(id) { return document.getElementById(id); }
-/* إرسال سجل إلى Supabase (تستخدم في dashboard لحفظ الرسائل والمهام والتقييمات) */
-function pushRow(table, row) {
-    if (!row || !row.id && !row.code) return;
-    if (window.DB && DB.ready) {
-        DB.push(table, row);
-    }
-}
 function logout() {
     // Remove session from storage
     localStorage.removeItem(SESSION_KEY);
