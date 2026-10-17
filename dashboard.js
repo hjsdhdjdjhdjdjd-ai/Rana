@@ -563,8 +563,9 @@ function renderMyMessages() {
     all.sort(function (a, b) { return a.at - b.at; });
     if (!all.length) { ul.innerHTML = '<li class="empty">لا توجد رسائل.</li>'; return; }
     ul.innerHTML = "";
-    all.forEach(function (m) {
-        const li = document.createElement("li"); li.className = "msg-item";
+
+    /* بناء فقاعة رسالة واحدة */
+    function buildBubble(m) {
         const bubble = document.createElement("div");
         bubble.className = "msg-bubble " + (m.kind === "q" ? "q" : "a");
         const who = document.createElement("div");
@@ -585,9 +586,36 @@ function renderMyMessages() {
         bubble.appendChild(who);
         bubble.appendChild(textDiv);
         bubble.appendChild(time);
-        li.appendChild(bubble);
-        ul.appendChild(li);
-    });
+        return bubble;
+    }
+
+    let i = 0;
+    while (i < all.length) {
+        const item = all[i];
+        if (item.kind === "q") {
+            const li = document.createElement("li"); li.className = "msg-item";
+            const convo = document.createElement("div"); convo.className = "msg-convo";
+            const body = document.createElement("div"); body.className = "msg-body";
+            body.appendChild(buildBubble(item));
+            i++;
+            /* إذا كان الرد مباشرة بعد السؤال، ضعه في نفس المربع أسفله */
+            if (i < all.length && all[i].kind === "a") {
+                const div = document.createElement("div"); div.className = "divider";
+                body.appendChild(div);
+                body.appendChild(buildBubble(all[i]));
+                i++;
+            }
+            convo.appendChild(body);
+            li.appendChild(convo);
+            ul.appendChild(li);
+        } else {
+            /* رد بلا سؤال سابق — يعرض بمفرده */
+            const li = document.createElement("li"); li.className = "msg-item";
+            li.appendChild(buildBubble(item));
+            ul.appendChild(li);
+            i++;
+        }
+    }
 }
 function initToTeacherForm() {
     setupAttach("attachToTeacher", "imgToTeacher", "prevToTeacher", "toTeacher");
