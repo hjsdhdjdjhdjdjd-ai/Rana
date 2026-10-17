@@ -11,6 +11,7 @@ const WELCOME_KEY = "rana_welcome";
 const PHOTOS_KEY = "rana_student_photos";
 const CASCADE_KEYS = [TASKS_KEY, EVALS_KEY, MSG_S_KEY, MSG_G_KEY, GUARDIANS_KEY, MSG_T_KEY, WELCOME_KEY];
 const attachState = {};
+function $(id) { return document.getElementById(id); }
 function logout() {
     // Remove session from storage
     localStorage.removeItem(SESSION_KEY);
