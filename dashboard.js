@@ -12,6 +12,13 @@ const PHOTOS_KEY = "rana_student_photos";
 const CASCADE_KEYS = [TASKS_KEY, EVALS_KEY, MSG_S_KEY, MSG_G_KEY, GUARDIANS_KEY, MSG_T_KEY, WELCOME_KEY];
 const attachState = {};
 function $(id) { return document.getElementById(id); }
+/* إرسال سجل إلى Supabase (تستخدم في dashboard لحفظ الرسائل والمهام والتقييمات) */
+function pushRow(table, row) {
+    if (!row || !row.id && !row.code) return;
+    if (window.DB && DB.ready) {
+        DB.push(table, row);
+    }
+}
 function logout() {
     // Remove session from storage
     localStorage.removeItem(SESSION_KEY);
@@ -505,16 +512,37 @@ function renderTeacherMsgs() {
     all.forEach(function (m) { if (m && !m.read) { m.read = true; ch = true; } });
     if (ch) saveList(MSG_T_KEY, all);
     all.forEach(function (m) { if (m && m.id && m.read) pushRow("messages", { id: m.id, is_read: true }); });
+    /* إرسال حالة القراءة إلى Supabase عشان الطالب يشوف "تم القراءة" من أي جهاز */
+    if (window.DB && DB.ready) {
+        all.forEach(function (m) { if (m && m.id && m.read) DB.push("messages", { id: m.id, is_read: true }); });
+    }
     updateMsgBadge();
     ul.querySelectorAll(".msg-item").forEach(function (li) { li.classList.remove("unread"); li.querySelector(".status").textContent = "مقروءة"; li.querySelector(".status").classList.remove("new"); });
 }
 /*__PART7__*/
 function initStudentArea() {
-    refreshFromCloud(function () {
-        applyAvatar();
-        renderWelcome(); renderMyTasks(); renderMyEval(); renderMyMessages();
-        renderMyToTeacher();
-    });
+    /* سحب أحدث البيانات من Supabase قبل العرض عشان الطالب يشوف ردود المعلمة من أي جهاز */
+    if (window.DB && DB.ready) {
+        DB.pullAll().then(function () {
+            refreshFromCloud(function () {
+                applyAvatar();
+                renderWelcome(); renderMyTasks(); renderMyEval(); renderMyMessages();
+                renderMyToTeacher();
+            });
+        }).catch(function () {
+            refreshFromCloud(function () {
+                applyAvatar();
+                renderWelcome(); renderMyTasks(); renderMyEval(); renderMyMessages();
+                renderMyToTeacher();
+            });
+        });
+    } else {
+        refreshFromCloud(function () {
+            applyAvatar();
+            renderWelcome(); renderMyTasks(); renderMyEval(); renderMyMessages();
+            renderMyToTeacher();
+        });
+    }
     initToTeacherForm(); renderMyToTeacher();
     setupPhotoControl("attachMyPhoto", "imgMyPhoto", "prevMyPhoto", function () { return session ? session.code : null; });
     showPhotoState("prevMyPhoto", "attachMyPhoto", session.code);
@@ -629,6 +657,10 @@ function initToTeacherForm() {
         const sent = list[0];
         if (!saveListSafe(MSG_T_KEY, list)) return fail("مساحة التخزين ممتلئة");
         pushRow("messages", { kind: "t", code: sent.code, text: sent.text || null, image: sent.image, is_read: false, at: sent.at });
+        /* إرسال مباشر إلى Supabase عشان المعلم يشوف الرسالة من أي جهاز */
+        if (window.DB && DB.ready) {
+            DB.push("messages", { kind: "t", code: sent.code, text: sent.text || null, image: sent.image, is_read: false, at: sent.at });
+        }
         okFn(form, box); form.reset(); clearAttach("toTeacher", "attachToTeacher", "prevToTeacher");
         renderMyToTeacher(); toast("تم ارسال رسالتك");
     });

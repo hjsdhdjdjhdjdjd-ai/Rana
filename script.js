@@ -200,6 +200,7 @@ function loginAsGuardian(guardian) {
     clearError();
     loginBtn.textContent = "✓ تم تسجيل الدخول";
     loginBtn.classList.add("success");
+    if (window.DB && DB.ready) DB.pullAll();
     setTimeout(() => { location.href = "guardian.html"; }, FAKE_DELAY);
 }
 
@@ -212,6 +213,7 @@ function finishStudentLogin(student) {
     clearError();
     loginBtn.textContent = "✓ تم تسجيل الدخول";
     loginBtn.classList.add("success");
+    if (window.DB && DB.ready) DB.pullAll();
     setTimeout(() => { location.href = "dashboard.html"; }, FAKE_DELAY);
 }
 

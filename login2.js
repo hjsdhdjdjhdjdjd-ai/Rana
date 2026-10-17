@@ -61,6 +61,7 @@ form.addEventListener("submit", (e) => {
         const store = rememberChk.checked ? localStorage : sessionStorage;
         store.setItem(SESSION_KEY, JSON.stringify(session));
         clearError(); loginBtn.textContent = "تم تسجيل الدخول"; loginBtn.classList.add("success");
+        if (window.DB && DB.ready) DB.pullAll();
         setTimeout(() => { location.href = "dashboard.html"; }, 600);
     };
     if (window.DB && DB.ready) {
